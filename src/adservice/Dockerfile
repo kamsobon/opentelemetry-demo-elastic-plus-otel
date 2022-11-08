@@ -30,7 +30,8 @@ WORKDIR /usr/src/app/
 
 COPY --from=builder /usr/src/app/ ./
 ADD https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v$version/opentelemetry-javaagent.jar /app/opentelemetry-javaagent.jar
-ENV JAVA_TOOL_OPTIONS=-javaagent:/app/opentelemetry-javaagent.jar
+ADD https://oss.sonatype.org/service/local/repositories/snapshots/content/co/elastic/apm/elastic-apm-agent/1.26.1-SNAPSHOT/elastic-apm-agent-1.26.1-20211115.095039-59.jar /app/elastic-apm-agent.jar
+ENV JAVA_TOOL_OPTIONS="-javaagent:/app/opentelemetry-javaagent.jar -javaagent:/app/elastic-apm-agent.jar"
 
 EXPOSE ${AD_SERVICE_PORT}
 ENTRYPOINT [ "./build/install/hipstershop/bin/AdService" ]
