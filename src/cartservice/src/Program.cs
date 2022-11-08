@@ -24,6 +24,10 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using cartservice.services;
 using Microsoft.AspNetCore.Http;
+using Elastic.Apm.NetCoreAll;
+using Elastic.Apm;
+using Elastic.Apm.GrpcClient;
+using Elastic.Apm.StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 string redisAddress = builder.Configuration["REDIS_ADDR"];
@@ -62,6 +66,9 @@ builder.Services.AddGrpcHealthChecks()
     .AddCheck("Sample", () => HealthCheckResult.Healthy());
 
 var app = builder.Build();
+
+app.UseAllElasticApm(app.Configuration);
+cartStore.GetConnection().UseElasticApm();
 
 if (app.Environment.IsDevelopment())
         {
