@@ -46,8 +46,10 @@ import (
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 
+	"github.com/grpc-ecosystem/go-grpc-middleware"
 	pb "github.com/open-telemetry/opentelemetry-demo/src/checkoutservice/genproto/hipstershop"
 	"github.com/open-telemetry/opentelemetry-demo/src/checkoutservice/money"
+	"go.elastic.co/apm/module/apmgrpc/v2"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 )
 
@@ -147,8 +149,14 @@ func main() {
 	}
 
 	var srv = grpc.NewServer(
-		grpc.UnaryInterceptor(otelgrpc.UnaryServerInterceptor()),
-		grpc.StreamInterceptor(otelgrpc.StreamServerInterceptor()),
+		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
+			otelgrpc.UnaryServerInterceptor(),
+			apmgrpc.NewUnaryServerInterceptor(),
+		)),
+		grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(
+			otelgrpc.StreamServerInterceptor(),
+			apmgrpc.NewStreamServerInterceptor(),
+		)),
 	)
 	pb.RegisterCheckoutServiceServer(srv, svc)
 	healthpb.RegisterHealthServer(srv, svc)
@@ -303,8 +311,14 @@ func (cs *checkoutService) prepareOrderItemsAndShippingQuoteFromCart(ctx context
 func createClient(ctx context.Context, svcAddr string) (*grpc.ClientConn, error) {
 	return grpc.DialContext(ctx, svcAddr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor()),
-		grpc.WithStreamInterceptor(otelgrpc.StreamClientInterceptor()),
+		grpc.WithUnaryInterceptor(grpc_middleware.ChainUnaryClient(
+			otelgrpc.UnaryClientInterceptor(),
+			apmgrpc.NewUnaryClientInterceptor(),
+		)),
+		grpc.WithStreamInterceptor(grpc_middleware.ChainStreamClient(
+			otelgrpc.StreamClientInterceptor(),
+			apmgrpc.NewStreamClientInterceptor(),
+		)),
 	)
 }
 

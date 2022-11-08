@@ -109,6 +109,8 @@ services:
       - OTEL_EXPORTER_OTLP_METRICS_ENDPOINT
       - OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
       - OTEL_SERVICE_NAME=checkoutservice
+      - ELASTIC_APM_SERVICE_NAME=checkoutservice
+      - ELASTIC_APM_SERVER_URL
     depends_on:
       - cartservice
       - currencyservice
