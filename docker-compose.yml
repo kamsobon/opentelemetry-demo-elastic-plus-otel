@@ -201,6 +201,8 @@ services:
       - ENV_PLATFORM
       - OTEL_SERVICE_NAME=frontend
       - PUBLIC_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+      - ELASTIC_APM_SERVICE_NAME=frontend
+      - ELASTIC_APM_SERVER_URL
     depends_on:
       - adservice
       - cartservice
