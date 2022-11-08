@@ -1,0 +1,79 @@
+version: '3.9'
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
+    ports:
+      - 9200:9200
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=500ms"]
+      retries: 300
+      interval: 1s
+    environment:
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - "discovery.type=single-node"
+      - ELASTIC_PASSWORD=admin
+      - xpack.security.enabled=true
+      - xpack.security.authc.api_key.enabled=true
+      - logger.org.elasticsearch=${ES_LOG_LEVEL:-error}
+      - action.destructive_requires_name=false
+    networks: 
+      - elastic
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.0
+    ports:
+      - 5601:5601
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:5601/api/status | grep -q 'All services are available'"]
+      retries: 300
+      interval: 1s
+    environment:
+      - ELASTICSEARCH_URL="http://elasticsearch:9200"
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=admin
+      - SERVER_NAME=kibana-example
+      - xpack.security.enabled=true
+      - xpack.security.authc.api_key.enabled=true
+    depends_on:
+      elasticsearch: { condition: service_healthy }
+    networks:
+        - elastic
+
+
+  apm-server:
+    image: docker.elastic.co/apm/apm-server:7.17.0
+    ports:
+      - 8200:8200
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -k http://localhost:8200/api/status | grep -q 'HEALTHY'"]
+      retries: 300
+      interval: 1s
+    command: >
+      apm-server -e
+         -E apm-server.rum.enabled=true
+         -E setup.kibana.host=kibana:5601
+         -E setup.template.settings.index.number_of_replicas=0
+         -E apm-server.kibana.enabled=true
+         -E apm-server.kibana.host=kibana:5601
+         -E output.elasticsearch.hosts=["elasticsearch:9200"]
+         -E apm-server.kibana.username=elastic
+         -E apm-server.kibana.password=admin
+         -E output.elasticsearch.username=elastic
+         -E output.elasticsearch.password=admin
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - SETGID
+      - SETUID
+    depends_on:
+      elasticsearch: { condition: service_healthy }
+      kibana: { condition: service_healthy }
+    networks:
+        - elastic
+
+networks:
+  elastic:
+      driver: bridge 
+
