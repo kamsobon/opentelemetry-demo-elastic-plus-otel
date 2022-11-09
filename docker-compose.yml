@@ -323,6 +323,8 @@ services:
       - FEATURE_FLAG_GRPC_SERVICE_ADDR
       - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
       - OTEL_SERVICE_NAME=productcatalogservice
+      - ELASTIC_APM_SERVICE_NAME=productcatalogservice
+      - ELASTIC_APM_SERVER_URL
     depends_on:
       - otelcol
     logging: *logging
