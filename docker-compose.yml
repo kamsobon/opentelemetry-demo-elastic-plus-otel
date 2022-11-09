@@ -296,6 +296,8 @@ services:
       - PAYMENT_SERVICE_PORT
       - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
       - OTEL_SERVICE_NAME=paymentservice
+      - ELASTIC_APM_SERVICE_NAME=paymentservice
+      - ELASTIC_APM_SERVER_URL
     depends_on:
       - otelcol
     logging: *logging

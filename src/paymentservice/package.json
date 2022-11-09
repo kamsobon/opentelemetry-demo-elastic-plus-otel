@@ -17,6 +17,7 @@
     "@opentelemetry/core": "1.7.0",
     "@opentelemetry/exporter-trace-otlp-grpc": "0.33.0",
     "@opentelemetry/sdk-node": "0.33.0",
+    "elastic-apm-node": "3.40.0",
     "grpc-js-health-check": "^1.0.2",
     "pino": "8.7.0",
     "simple-card-validator": "1.1.0",
